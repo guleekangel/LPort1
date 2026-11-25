@@ -1,0 +1,426 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Section from '../components/Section.astro';
+import About from '../components/About.astro';
+import { CATEGORIES, SITE, UI } from '../lib/site';
+
+const all = await getCollection('work');
+const byCategory = new Map<string, typeof all>();
+for (const { slug } of CATEGORIES) byCategory.set(slug, []);
+
+for (const item of all) {
+  const bucket = byCategory.get(item.data.category);
+  if (bucket) bucket.push(item);
+}
+
+for (const bucket of byCategory.values()) {
+  bucket.sort(
+    (a, b) =>
+      a.data.order - b.data.order ||
+      (b.data.year ?? 0) - (a.data.year ?? 0) ||
+      a.data.title.localeCompare(b.data.title),
+  );
+}
+
+const total = all.length;
+const totalPadded = String(total).padStart(2, '0');
+
+// Pick a dramatic hero image: prefer a featured or tea-room piece.
+const heroCandidates = all
+  .filter((i) => i.data.featured || i.data.category === 'tea-room')
+  .sort((a, b) => (a.data.featured === b.data.featured ? 0 : a.data.featured ? -1 : 1));
+const heroPiece = heroCandidates[0] ?? all[0];
+const heroImage = heroPiece?.data.cover ?? heroPiece?.data.gallery[0];
+---
+
+<Layout
+  title={`${SITE.name} · ${SITE.role.zh} / ${SITE.role.en}`}
+  description={`${SITE.intro.zh} ${SITE.intro.en}`}
+>
+  <Nav name={SITE.name} nameEn={SITE.nameEn} />
+
+  <main id="main">
+    <!-- ============ Hero ============ -->
+    <section class="hero" id="top">
+      <div class="hero__media" aria-hidden="true">
+        {
+          heroImage && (
+            <Image
+              src={heroImage}
+              alt=""
+              widths={[640, 960, 1280, 1600, 2000, 2560]}
+              sizes="100vw"
+              loading="eager"
+              fetchpriority="high"
+              decoding="sync"
+            />
+          )
+        }
+        <div class="hero__vignette" />
+      </div>
+
+      <div class="shell hero__inner">
+        <div class="hero__text">
+          <p class="hero__eyebrow reveal">
+            <span class="hero__eyebrow-zh">{SITE.role.zh}</span>
+            <span class="hero__eyebrow-sep" aria-hidden="true">/</span>
+            <span class="hero__eyebrow-en">{SITE.role.en}</span>
+          </p>
+
+          <h1 class="hero__title">
+            <span class="hero__title-zh reveal">{SITE.name}</span>
+            <span class="hero__title-en reveal">{SITE.nameEn}</span>
+          </h1>
+
+          <p class="hero__intro reveal">
+            {SITE.intro.zh}
+            <span class="hero__intro-en">{SITE.intro.en}</span>
+          </p>
+        </div>
+
+        <dl class="hero__stats reveal">
+          <div>
+            <dt>{UI.piecesLabel.zh} <span>{UI.piecesLabel.en}</span></dt>
+            <dd class="tnum">{totalPadded}</dd>
+          </div>
+          <div>
+            <dt>{UI.collectionsLabel.zh} <span>{UI.collectionsLabel.en}</span></dt>
+            <dd class="tnum">{String(CATEGORIES.length).padStart(2, '0')}</dd>
+          </div>
+          <div>
+            <dt>{UI.contactLabel.zh} <span>{UI.contactLabel.en}</span></dt>
+            <dd class="tnum">
+              <a href={`tel:${SITE.phoneHref}`}>{SITE.phone}</a>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ============ Sections ============ -->
+    {CATEGORIES.map((cat, i) => (
+      <Section
+        slug={cat.slug}
+        label={cat.label}
+        numeral={cat.numeral}
+        blurb={cat.blurb}
+        items={byCategory.get(cat.slug) ?? []}
+        index={i}
+      />
+    ))}
+
+    <!-- ============ About ============ -->
+    <About />
+
+    <!-- ============ Contact ============ -->
+    <section class="contact" id="contact" data-section="contact">
+      <div class="shell contact__inner">
+        <p class="contact__eyebrow reveal">{UI.contact.en}</p>
+
+        <h2 class="contact__title reveal">
+          <span>询价与</span>
+          <span>项目合作。</span>
+        </h2>
+        <p class="contact__title-en reveal">Commissions &amp; collaborations</p>
+
+        <a class="contact__phone reveal" href={`tel:${SITE.phoneHref}`}>{SITE.phone}</a>
+
+        <p class="contact__note reveal">
+          {UI.contactNote.zh}
+          <span>{UI.contactNote.en}</span>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell footer__inner">
+      <span class="footer__name">{SITE.name}</span>
+      <span class="footer__role">{SITE.role.zh} / {SITE.role.en}</span>
+      <a href="#top">{UI.backToTop.zh} · {UI.backToTop.en}</a>
+    </div>
+  </footer>
+</Layout>
+
+<style>
+  /* ============ Hero ============ */
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: flex-end;
+    padding-block: clamp(5rem, 12vw, 9rem) clamp(2.5rem, 6vw, 4.5rem);
+    overflow: hidden;
+  }
+
+  .hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .hero__media :global(picture),
+  .hero__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+  }
+
+  .hero__vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(11, 10, 9, 0.35) 0%, rgba(11, 10, 9, 0.72) 60%, rgba(11, 10, 9, 0.92) 100%),
+      linear-gradient(to right, rgba(11, 10, 9, 0.78) 0%, transparent 55%);
+  }
+
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.65fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: end;
+  }
+
+  .hero__eyebrow {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    margin: 0 0 1.6rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .hero__eyebrow-sep {
+    opacity: 0.45;
+  }
+
+  .hero__eyebrow-zh {
+    letter-spacing: 0.3em;
+  }
+
+  .hero__title {
+    margin: 0;
+  }
+
+  .hero__title-zh {
+    display: block;
+    font-size: clamp(4rem, 15vw, 12rem);
+    font-weight: 650;
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    color: var(--text);
+  }
+
+  .hero__title-en {
+    display: block;
+    margin-top: 0.9rem;
+    font-size: clamp(0.6875rem, 1.4vw, 0.875rem);
+    font-weight: 500;
+    letter-spacing: 0.55em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .hero__intro {
+    margin: 2.5rem 0 0;
+    max-width: 46ch;
+    font-size: clamp(0.9375rem, 1.25vw, 1.0625rem);
+    line-height: 1.85;
+    color: var(--text-dim);
+  }
+
+  .hero__intro-en {
+    display: block;
+    margin-top: 0.85rem;
+    font-size: 0.9em;
+    line-height: 1.65;
+    color: var(--text-faint);
+  }
+
+  .hero__stats {
+    margin: 0;
+    display: grid;
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    background: color-mix(in srgb, var(--bg) 62%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid color-mix(in srgb, var(--line) 50%, transparent);
+    border-radius: 2px;
+  }
+
+  .hero__stats > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .hero__stats dt {
+    font-size: 0.6875rem;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .hero__stats dt span {
+    font-size: 0.75em;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-left: 0.35em;
+  }
+
+  .hero__stats dd {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  .hero__stats dd a {
+    transition: color 0.25s var(--ease);
+  }
+
+  .hero__stats dd a:hover {
+    color: var(--accent);
+  }
+
+  /* ============ Contact ============ */
+  .contact {
+    padding-block: clamp(5rem, 12vw, 10rem);
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .contact__inner {
+    max-width: 58ch;
+  }
+
+  .contact__eyebrow {
+    margin: 0 0 1.25rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-weight: 500;
+  }
+
+  .contact__title {
+    margin: 0 0 0.75rem;
+    font-size: clamp(2.25rem, 6vw, 4.5rem);
+    font-weight: 500;
+    line-height: 1.12;
+    letter-spacing: 0.02em;
+  }
+
+  .contact__title span {
+    display: block;
+  }
+
+  .contact__title-en {
+    margin: 0 0 3rem;
+    font-size: clamp(0.6875rem, 1.2vw, 0.8125rem);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .contact__phone {
+    display: inline-block;
+    font-size: clamp(1.125rem, 2.4vw, 1.5rem);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: var(--text);
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    padding-bottom: 0.2em;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+  }
+
+  .contact__phone:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .contact__note {
+    margin: 2.25rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--text-dim);
+    max-width: 44ch;
+  }
+
+  .contact__note span {
+    display: block;
+    margin-top: 0.4em;
+    font-size: 0.95em;
+    color: var(--text-faint);
+  }
+
+  /* ============ Footer ============ */
+  .footer {
+    border-top: 1px solid var(--line-soft);
+    padding-block: 1.75rem;
+  }
+
+  .footer__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-size: 0.6875rem;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+  }
+
+  .footer__name {
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  .footer__role {
+    opacity: 0.85;
+  }
+
+  .footer__inner a {
+    margin-inline-start: auto;
+    color: var(--text-dim);
+    transition: color 0.25s var(--ease);
+  }
+
+  .footer__inner a:hover {
+    color: var(--text);
+  }
+
+  @media (max-width: 900px) {
+    .hero__inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2.75rem;
+    }
+    .hero__stats {
+      justify-self: start;
+      min-width: min(100%, 22rem);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .hero__title-en {
+      letter-spacing: 0.35em;
+    }
+    .hero__stats {
+      padding: 1rem;
+    }
+  }
+</style>

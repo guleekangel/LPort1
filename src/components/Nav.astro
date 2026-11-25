@@ -1,0 +1,346 @@
+---
+/**
+ * Sticky anchor navigation.
+ *
+ * Chinese is the primary label; English sits beside it in a smaller, dimmer
+ * treatment. The active-section highlight is driven by an IntersectionObserver
+ * in a small inline script — the anchors work without JS.
+ */
+import { CATEGORIES, UI } from '../lib/site';
+
+interface Props {
+  name: string;
+  nameEn: string;
+}
+
+const { name, nameEn } = Astro.props;
+---
+
+<header class="nav" id="site-nav">
+  <div class="nav__inner shell">
+    <a class="nav__brand" href="#top">
+      <span class="nav__brand-zh">{name}</span>
+      <span class="nav__brand-en">{nameEn}</span>
+    </a>
+
+    <nav class="nav__links" aria-label="Sections">
+      {
+        CATEGORIES.map((c) => (
+          <a class="nav__link" href={`#${c.slug}`} data-section={c.slug}>
+            <span class="nav__link-label">{c.label.zh}</span>
+            <span class="nav__link-en">{c.label.en}</span>
+          </a>
+        ))
+      }
+      <a class="nav__link nav__link--about" href="#about" data-section="about">
+        <span class="nav__link-label">关于我</span>
+        <span class="nav__link-en">About</span>
+      </a>
+    </nav>
+
+    <a class="nav__contact" href="#contact">
+      <span>{UI.contact.zh}</span>
+      <span class="nav__contact-en">{UI.contact.en}</span>
+    </a>
+  </div>
+
+  <div class="nav__progress" aria-hidden="true"><span id="nav-progress-bar"></span></div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition: background-color 0.35s var(--ease), border-color 0.35s var(--ease);
+  }
+
+  .nav.is-scrolled {
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+    border-bottom-color: var(--line-soft);
+  }
+
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    height: 4.25rem;
+  }
+
+  /* ---- Brand ---- */
+  .nav__brand {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    white-space: nowrap;
+  }
+
+  .nav__brand-zh {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--text);
+  }
+
+  .nav__brand-en {
+    font-size: 0.5625rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-weight: 500;
+  }
+
+  /* ---- Links ---- */
+  .nav__links {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    margin-inline-start: auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    mask-image: linear-gradient(to right, black 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 92%, transparent 100%);
+  }
+
+  .nav__links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav__link {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: 3px;
+    white-space: nowrap;
+    transition: background-color 0.25s var(--ease);
+  }
+
+  .nav__link::after {
+    content: '';
+    position: absolute;
+    left: 0.7rem;
+    right: 0.7rem;
+    bottom: 0.15rem;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s var(--ease-out);
+  }
+
+  .nav__link:hover {
+    background: var(--bg-hover);
+  }
+
+  .nav__link-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    transition: color 0.25s var(--ease);
+  }
+
+  .nav__link-en {
+    font-size: 0.5rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    opacity: 0.75;
+    transition: color 0.25s var(--ease), opacity 0.25s var(--ease);
+  }
+
+  .nav__link:hover .nav__link-label,
+  .nav__link[aria-current='true'] .nav__link-label {
+    color: var(--text);
+  }
+
+  .nav__link[aria-current='true'] .nav__link-en {
+    color: var(--accent);
+    opacity: 1;
+  }
+
+  .nav__link[aria-current='true']::after {
+    transform: scaleX(1);
+  }
+
+  /* Separator before About — it sits outside the numbered collections. */
+  .nav__link--about {
+    position: relative;
+    margin-inline-start: 0.5rem;
+    padding-inline-start: 0.95rem;
+  }
+
+  .nav__link--about::before {
+    content: '';
+    position: absolute;
+    left: 0.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 1.1rem;
+    background: var(--line);
+  }
+
+  /* ---- Contact ---- */
+  .nav__contact {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05rem;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    transition: color 0.25s var(--ease), border-color 0.25s var(--ease), background-color 0.25s var(--ease);
+  }
+
+  .nav__contact-en {
+    font-size: 0.5rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .nav__contact:hover {
+    color: var(--text);
+    border-color: var(--text-faint);
+    background: var(--bg-hover);
+  }
+
+  .nav__progress {
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 1px;
+    background: transparent;
+  }
+
+  #nav-progress-bar {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    opacity: 0.5;
+  }
+
+  @media (max-width: 780px) {
+    .nav__inner {
+      gap: 0;
+      height: 3.5rem;
+    }
+    .nav__brand {
+      padding-inline-end: 0.9rem;
+      margin-inline-end: 0.15rem;
+      background: linear-gradient(
+        to right,
+        color-mix(in srgb, var(--bg) 80%, transparent) 78%,
+        transparent
+      );
+    }
+    .nav__brand-en {
+      display: none;
+    }
+    .nav__link {
+      padding: 0.4rem 0.55rem;
+    }
+    .nav__link-label {
+      font-size: 0.75rem;
+    }
+    /* Keep both languages on mobile — the English line is what makes it
+       read as bilingual rather than just translated. */
+    .nav__link-en {
+      font-size: 0.4375rem;
+      letter-spacing: 0.1em;
+    }
+    .nav__contact {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const sections = Array.from(
+    document.querySelectorAll<HTMLElement>('section[data-section]'),
+  );
+  const links = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>('.nav__link'),
+  );
+
+  if (sections.length && links.length && 'IntersectionObserver' in window) {
+    const bySlug = new Map(links.map((l) => [l.dataset.section, l]));
+    const visible = new Set<string>();
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const slug = (e.target as HTMLElement).dataset.section;
+          if (!slug) continue;
+          if (e.isIntersecting) visible.add(slug);
+          else visible.delete(slug);
+        }
+
+        let active: string | null = null;
+        for (const s of sections) {
+          const slug = s.dataset.section;
+          if (slug && visible.has(slug)) {
+            active = slug;
+            break;
+          }
+        }
+        if (!active) return;
+
+        for (const [slug, link] of bySlug) {
+          if (slug === active) link.setAttribute('aria-current', 'true');
+          else link.removeAttribute('aria-current');
+        }
+      },
+      { rootMargin: '-20% 0px -55% 0px', threshold: 0 },
+    );
+
+    for (const s of sections) io.observe(s);
+  }
+
+  const nav = document.getElementById('site-nav');
+  if (nav) {
+    const onScroll = () => {
+      nav.classList.toggle('is-scrolled', window.scrollY > 40);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  const bar = document.getElementById('nav-progress-bar');
+  if (bar) {
+    let raf = 0;
+    const update = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      const pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+      bar.style.width = pct.toFixed(2) + '%';
+      raf = 0;
+    };
+    addEventListener(
+      'scroll',
+      () => {
+        if (!raf) raf = requestAnimationFrame(update);
+      },
+      { passive: true },
+    );
+    update();
+  }
+</script>

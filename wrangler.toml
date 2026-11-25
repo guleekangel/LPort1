@@ -1,0 +1,22 @@
+# Cloudflare configuration for this Astro static site.
+#
+# This file intentionally declares BOTH deployment styles, because the
+# Cloudflare project type has flip-flopped during debugging:
+#
+#   * `pages_build_output_dir` -> used when the project is a Pages project.
+#     Pages ignores `[assets]` entirely and only reads this key.
+#
+#   * `[assets] directory`     -> used when the project is a Workers project.
+#
+# Declaring both means `wrangler deploy` and `wrangler pages deploy` can each
+# find the build output, regardless of which type the dashboard is set to.
+
+name = "furniture-portfolio"
+compatibility_date = "2025-01-01"
+
+# Pages-style output directory (read by `wrangler pages deploy`).
+pages_build_output_dir = "./dist"
+
+# Workers-style static assets (read by `wrangler deploy`).
+[assets]
+directory = "./dist"
