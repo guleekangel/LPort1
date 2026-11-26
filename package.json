@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "deploy:cf": "astro build && wrangler pages deploy dist/ --project-name=furniture-portfolio --branch=main --commit-dirty=true"
+    "preview": "astro preview"
   },
   "keywords": [
     "astro",
@@ -24,7 +23,6 @@
   },
   "devDependencies": {
     "cssnano": "^8.0.10",
-    "postcss-preset-env": "^11.6.3",
-    "wrangler": "4.168.0"
+    "postcss-preset-env": "^11.6.3"
   }
 }
