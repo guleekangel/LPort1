@@ -1,0 +1,16 @@
+# Cloudflare Pages configuration.
+#
+# This project deploys as the Pages project `lport1`
+# (https://lport1.pages.dev), linked to the GitHub repo
+# guleekangel/LPort1.
+#
+# Pages reads only `pages_build_output_dir` to find the static build
+# output — it ignores the `[assets]` table that Workers uses. Astro
+# writes to ./dist, so that is what we point at here.
+#
+# Do not add an `[assets]` table: that would switch Wrangler into
+# Workers mode and break the Pages deployment.
+
+name = "lport1"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "./dist"
