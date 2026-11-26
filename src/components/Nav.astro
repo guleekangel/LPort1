@@ -23,7 +23,8 @@ const { name, nameEn } = Astro.props;
       <span class="nav__brand-en">{nameEn}</span>
     </a>
 
-    <nav class="nav__links" aria-label="Sections">
+    <!-- Desktop: horizontal links -->
+    <nav class="nav__links nav__links--desktop" aria-label="Sections">
       {
         CATEGORIES.map((c) => (
           <a class="nav__link" href={`#${c.slug}`} data-section={c.slug}>
@@ -37,6 +38,34 @@ const { name, nameEn } = Astro.props;
         <span class="nav__link-en">About</span>
       </a>
     </nav>
+
+    <!-- Mobile: dropdown menu -->
+    <div class="nav__menu nav__menu--mobile" id="nav-menu-mobile">
+      <button
+        class="nav__menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="nav-dropdown"
+        aria-label="打开作品分类菜单"
+      >
+        <span class="nav__menu-label">作品集</span>
+        <span class="nav__menu-caret" aria-hidden="true" />
+      </button>
+      <nav class="nav__dropdown" id="nav-dropdown" aria-label="作品分类">
+        {
+          CATEGORIES.map((c) => (
+            <a class="nav__dropdown-link" href={`#${c.slug}`} data-section={c.slug}>
+              <span class="nav__dropdown-label">{c.label.zh}</span>
+              <span class="nav__dropdown-en">{c.label.en}</span>
+            </a>
+          ))
+        }
+        <a class="nav__dropdown-link nav__dropdown-link--about" href="#about" data-section="about">
+          <span class="nav__dropdown-label">关于我</span>
+          <span class="nav__dropdown-en">About</span>
+        </a>
+      </nav>
+    </div>
 
     <a class="nav__contact" href="#contact">
       <span>{UI.contact.zh}</span>
@@ -240,36 +269,136 @@ const { name, nameEn } = Astro.props;
     opacity: 0.5;
   }
 
+  /* ---- Mobile dropdown (作品集) ---- */
+  .nav__menu--mobile {
+    display: none;
+    position: relative;
+    margin-inline-start: auto;
+  }
+
+  .nav__menu-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.7rem;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--text-dim);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: color 0.25s var(--ease), border-color 0.25s var(--ease), background-color 0.25s var(--ease);
+  }
+
+  .nav__menu-toggle:hover,
+  .nav__menu-toggle[aria-expanded='true'] {
+    color: var(--text);
+    border-color: var(--text-faint);
+    background: var(--bg-hover);
+  }
+
+  .nav__menu-caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 0.15rem;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid currentColor;
+    transition: transform 0.25s var(--ease);
+  }
+
+  .nav__menu-toggle[aria-expanded='true'] .nav__menu-caret {
+    transform: rotate(180deg);
+  }
+
+  .nav__dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 10rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0.35rem;
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+    border-radius: 6px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), visibility 0.25s var(--ease);
+    z-index: 101;
+  }
+
+  .nav__menu-toggle[aria-expanded='true'] + .nav__dropdown,
+  .nav__menu--mobile.is-open .nav__dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .nav__dropdown-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 4px;
+    color: var(--text-dim);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: color 0.2s var(--ease), background-color 0.2s var(--ease);
+  }
+
+  .nav__dropdown-link:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+  }
+
+  .nav__dropdown-link[aria-current='true'] {
+    color: var(--accent);
+  }
+
+  .nav__dropdown-en {
+    font-size: 0.5625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .nav__dropdown-link--about {
+    margin-top: 0.35rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--line-soft);
+    border-radius: 0 0 4px 4px;
+  }
+
   @media (max-width: 780px) {
     .nav__inner {
       gap: 0;
       height: 3.5rem;
-      overflow: hidden;
+      overflow: visible;
     }
     .nav__brand {
       flex-shrink: 0;
-      padding-inline-end: 0.75rem;
+      padding-inline-end: 0.5rem;
       margin-inline-end: 0;
     }
     .nav__brand-en {
       display: none;
     }
-    .nav__link {
-      padding: 0.35rem 0.5rem;
-    }
-    .nav__link-label {
-      font-size: 0.8125rem;
-      font-weight: 500;
-    }
-    .nav__link-en {
+    .nav__links--desktop {
       display: none;
     }
-    .nav__link--about {
-      margin-inline-start: 0;
-      padding-inline-start: 0.5rem;
-    }
-    .nav__link--about::before {
-      display: none;
+    .nav__menu--mobile {
+      display: block;
     }
     .nav__contact {
       display: none;
@@ -291,7 +420,7 @@ const { name, nameEn } = Astro.props;
     document.querySelectorAll<HTMLElement>('section[data-section]'),
   );
   const links = Array.from(
-    document.querySelectorAll<HTMLAnchorElement>('.nav__link'),
+    document.querySelectorAll<HTMLAnchorElement>('.nav__link, .nav__dropdown-link'),
   );
 
   if (sections.length && links.length && 'IntersectionObserver' in window) {
@@ -335,6 +464,41 @@ const { name, nameEn } = Astro.props;
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+  }
+
+  // Mobile dropdown toggle.
+  const menuMobile = document.getElementById('nav-menu-mobile');
+  const menuToggle = menuMobile?.querySelector<HTMLButtonElement>('.nav__menu-toggle');
+  const menuDropdown = menuMobile?.querySelector<HTMLElement>('.nav__dropdown');
+  if (menuMobile && menuToggle && menuDropdown) {
+    const closeMenu = () => {
+      menuMobile.classList.remove('is-open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    };
+    const toggleMenu = () => {
+      const isOpen = menuMobile.classList.toggle('is-open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+    };
+
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    // Close when a link is clicked.
+    menuDropdown.querySelectorAll('a').forEach((a) => {
+      a.addEventListener('click', closeMenu);
+    });
+
+    // Close when clicking outside.
+    document.addEventListener('click', (e) => {
+      if (!menuMobile.contains(e.target as Node)) closeMenu();
+    });
+
+    // Close on Escape.
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMenu();
+    });
   }
 
   const bar = document.getElementById('nav-progress-bar');
