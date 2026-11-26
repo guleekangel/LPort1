@@ -1,0 +1,9 @@
+{
+  "name": "lport1",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Furniture designer portfolio — plain static HTML, no build step",
+  "scripts": {
+    "build": "echo 'Static site: nothing to build' && exit 0"
+  }
+}
