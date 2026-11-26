@@ -189,19 +189,51 @@ const featuredIndex = items.findIndex((i) => i.data.featured);
     }
   }
 
-  @media (max-width: 560px) {
-    .grid {
-      grid-template-columns: minmax(0, 1fr);
+  @media (max-width: 780px) {
+    .section__head {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.25rem;
     }
-    .grid--featured > :global(.piece--featured) {
-      grid-column: span 1;
+    .section__headline {
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
+    }
+    .section__titles {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+    .section__title {
+      font-size: clamp(2rem, 9.5vw, 3.25rem);
+      line-height: 0.92;
+    }
+    .section__title-en {
+      font-size: 0.625rem;
+      letter-spacing: 0.2em;
+      opacity: 0.8;
     }
     .section__headline .accent-rule {
       display: none;
     }
     .section__aside {
       flex-direction: column;
-      gap: 0.5rem;
+      align-items: flex-start;
+      gap: 0.75rem;
+      max-width: 52ch;
+    }
+    .section__blurb {
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .grid--featured > :global(.piece--featured) {
+      grid-column: span 1;
     }
   }
 
