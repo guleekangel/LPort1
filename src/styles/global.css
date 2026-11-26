@@ -1,10 +1,12 @@
 /* ---------------------------------------------------------------
    Fonts — self-hosted, no third-party requests.
-   Inter for Latin, Noto Sans SC for Chinese. Both variable, so one
-   family covers every weight without extra downloads.
+   Inter for Latin UI, Noto Sans SC for Chinese body copy, and
+   Noto Serif SC for Chinese display headings. All variable, so one
+   file per family covers every weight without extra downloads.
    --------------------------------------------------------------- */
 @import '@fontsource-variable/inter';
 @import '@fontsource-variable/noto-sans-sc';
+@import '@fontsource-variable/noto-serif-sc';
 
 /* ---------------------------------------------------------------
    Design tokens
@@ -29,6 +31,12 @@
     'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   --font-cjk: 'Noto Sans SC Variable', 'Noto Sans SC', 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', var(--font-sans);
+
+  /* Display serif for Chinese headings. A serif carries the editorial,
+     gallery-catalogue register that a bold sans cannot — the strokes have
+     modulation, so it reads refined rather than shouty. */
+  --font-display: 'Noto Serif SC Variable', 'Noto Serif SC',
+    'Songti SC', 'STSong', 'SimSun', var(--font-cjk);
 
   --gutter: clamp(1.25rem, 4vw, 4rem);
   --maxw: 1600px;
