@@ -22,6 +22,8 @@
     "sharp": "^0.35.5"
   },
   "devDependencies": {
+    "cssnano": "^8.0.10",
+    "postcss-preset-env": "^11.6.3",
     "wrangler": "4.168.0"
   }
 }
